@@ -6,8 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Lead;
-use Illuminate\Support\Facades\Cache; // Import Cache facade
-use Illuminate\Support\Facades\Http; // Import Http facade for mocking
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class LeadApiTest extends TestCase
 {
@@ -20,10 +20,6 @@ class LeadApiTest extends TestCase
         parent::setUp();
 
         $this->apiToken = env('API_BEARER_TOKEN', 'test_api_token');
-
-        // Migrate the databases for testing.
-        // For the primary DB, RefreshDatabase trait handles it.
-        // For the logging DB, we need to explicitly run php artisan migrate:fresh --env=testing
 
         // Mock the third-party HTTP request to avoid actual external calls during tests
         Http::fake([
@@ -61,10 +57,8 @@ class LeadApiTest extends TestCase
             'name' => $leadData['name'],
         ]);
 
-        // Verify that the cache was cleared
         $this->assertFalse(Cache::has('all_leads'));
 
-        // Verify that the third-party API was called
         Http::assertSent(function ($request) use ($leadData) {
             return $request->url() == env('THIRD_PARTY_API_URL') &&
                 $request->method() == 'POST' &&
@@ -78,7 +72,6 @@ class LeadApiTest extends TestCase
      */
     public function it_returns_validation_errors_for_invalid_lead_data()
     {
-        // Missing required 'name' and invalid 'email'
         $leadData = [
             'email' => 'invalid-email',
             'phone' => '12345',
@@ -127,9 +120,8 @@ class LeadApiTest extends TestCase
      */
     public function it_can_retrieve_all_leads()
     {
-        Lead::factory()->count(3)->create(); // Create 3 leads using a factory
+        Lead::factory()->count(3)->create();
 
-        // First request - populates cache
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->apiToken,
         ])->getJson('/api/leads');
@@ -141,10 +133,8 @@ class LeadApiTest extends TestCase
             ])
             ->assertJsonCount(3, 'leads');
 
-        // Verify cache now has the leads
         $this->assertTrue(Cache::has('all_leads'));
 
-        // Second request - should hit cache
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->apiToken,
         ])->getJson('/api/leads');
@@ -185,7 +175,7 @@ class LeadApiTest extends TestCase
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->apiToken,
-        ])->getJson('/api/leads/999'); // Non-existent ID
+        ])->getJson('/api/leads/999');
 
         $response->assertStatus(404)
             ->assertJson([
@@ -232,8 +222,6 @@ class LeadApiTest extends TestCase
      */
     public function it_allows_access_with_valid_api_token()
     {
-        // This test only verifies that the middleware passes,
-        // it doesn't need to complete the full lead creation
         $leadData = [
             'name' => 'Valid Test',
             'email' => $this->faker->unique()->safeEmail,
@@ -243,8 +231,6 @@ class LeadApiTest extends TestCase
             'Authorization' => 'Bearer ' . $this->apiToken,
         ])->postJson('/api/leads', $leadData);
 
-        // Expect 201 created or 422 validation error if other fields are missing,
-        // but not 401. This indicates the authentication passed.
         $response->assertStatus(201);
     }
 }

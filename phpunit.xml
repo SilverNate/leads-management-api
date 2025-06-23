@@ -37,7 +37,7 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
 
         <!-- Other test env variables -->
-        <env name="API_BEARER_TOKEN" value="test_api_token"/>
+        <env name="API_BEARER_TOKEN" value="hUXTOA6r6xRTAVf5OEhFsoYZ2gy7EkzO5fOH57ZbKaJmvRcAM4gsZrGjItCg1Skl"/>
         <env name="THIRD_PARTY_API_URL" value="http://localhost:8080/mock-third-party"/>
 
         <env name="LOG_DB_CONNECTION" value="pgsql"/>

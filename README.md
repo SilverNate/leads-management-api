@@ -76,6 +76,13 @@ Verify Service
 docker compose ps
 ```
 
+### 3.Stop services
+- Windows : ctrl + c
+
+```bash
+docker compose down
+```
+
 ## 📡 API Endpoints
 
 ### Authentication
@@ -157,4 +164,14 @@ Responses
 php artisan migrate --env=testing
 /vendor/bin/phpunit
 ```
-if error happen delete error_log in database error_log_test cause refreshtable not include other than main DB.
+- if error happen delete error_log in database error_log_test cause refreshtable not include other than main DB.
+
+
+## Troubleshooting
+Issue with api not running properly :
+```bash
+docker compose exec php-fpm php artisan config:clear
+docker compose exec php-fpm php artisan cache:clear
+docker compose exec php-fpm php artisan route:clear
+```
+

@@ -62,7 +62,7 @@ services:
       - pgsql_leads_db
       - pgsql_error_logs_db
       - redis_cache
-
+      
   # PostgreSQL database for leads
   pgsql_leads_db:
     image: postgres:15-alpine
