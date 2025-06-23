@@ -10,7 +10,7 @@ A Laravel-based API for managing and forwarding lead data, with centralized erro
 ## 🚀 Features
 
 - **Lead Management API**:
-  - `POST /api/leads`: Store lead data in `leads_db` (PostgreSQL) and forward to a third-party service (e.g., Slack Webhook).
+  - `POST /api/leads`: Store lead data in `leads_db` (PostgreSQL) and forward to a third-party dummy
   - `GET /api/leads`: Retrieve all leads with Redis caching.
   - `GET /api/leads/{id}`: Retrieve specific lead details.
 
@@ -82,6 +82,17 @@ docker compose ps
 ```bash
 docker compose down
 ```
+
+### 4. Wordpress installation
+1. Open your web browser and go to http://localhost:8080. Follow the on-screen WordPress installation
+2. Log in to your WordPress Dashboard after the installation is complete.
+3. Check active theme on wordpress admin
+4. Create new page
+5. Edit page on right-side bar on template, choose <b>Lead Submission Form</b> from drop-down.
+6. Publish then open the page
+7. Fill the form
+8. Add utm source on the url example: http://localhost:8080/?page_id=28<b>&utm_source=facebook</b>
+9. Submit
 
 ## 📡 API Endpoints
 
