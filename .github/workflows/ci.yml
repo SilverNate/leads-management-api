@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo_pgsql, pgsql, redis, opcache
+          tools: composer, phpunit
+
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+
+      - name: Generate Laravel APP_KEY
+        run: php artisan key:generate --env=testing
+
+      - name: Configure .env for Testing
+        run: |
+          sed -i '/^DB_CONNECTION=/c\DB_CONNECTION=sqlite' .env
+          sed -i '/^DB_DATABASE=/c\DB_DATABASE=:memory:' .env
+          sed -i '/^LOG_DB_HOST=/c\LOG_DB_HOST=127.0.0.1' .env # Or keep as is if mocking DB
+          sed -i '/^LOG_DB_DATABASE=/c\LOG_DB_DATABASE=:memory:' .env
+          sed -i '/^LOG_DB_USERNAME=/c\LOG_DB_USERNAME=sqlite' .env
+          sed -i '/^LOG_DB_PASSWORD=/c\LOG_DB_PASSWORD=sqlite' .env
+          echo "API_BEARER_TOKEN=test_api_token" >> .env
+          echo "THIRD_PARTY_API_URL=http://localhost:8080/mock-third-party" >> .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      - name: Run Tests
+        run: php artisan test
+        env:
+          APP_ENV: testing
+          APP_DEBUG: "true"
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1 # or the service name if running in Docker
+          DB_PORT: 5432
+          DB_DATABASE: leads_db_test
+          DB_USERNAME: leads_user
+          DB_PASSWORD: leads_password
+
+          LOG_DB_CONNECTION: pgsql
+          LOG_DB_HOST: 127.0.0.1 # or the service name
+          LOG_DB_PORT: 5433
+          LOG_DB_DATABASE: error_logs_test
+          LOG_DB_USERNAME: logs_user
+          LOG_DB_PASSWORD: logs_password
+
+          API_BEARER_TOKEN: test_api_token
+          THIRD_PARTY_API_URL: http://localhost:8080/mock-third-party

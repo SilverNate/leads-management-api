@@ -1,0 +1,1 @@
+[2025-06-23 08:03:36] local.ERROR: Exception while forwarding lead to third-party service: cURL error 3: URL rejected: Port number was not a decimal number between 0 and 65535 (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for %5Bhttps://hooks.slack.com/services/%5D(https://hooks.slack.com/services/)... {"lead_id":6} 

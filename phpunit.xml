@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertDeprecationsToExceptions="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnRisky="false"
+         stopOnSkipped="false"
+         stopOnWarning="false">
+    <testsuites>
+        <testsuite name="Feature">
+            <directory>./tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Unit">
+            <directory>./tests/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:tmHwEKMzYot055NmCzyudvBKZZUWZNIa9WdPCZnVllM=" />
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="leads_db_test"/>
+        <env name="DB_USERNAME" value="leads_user"/>
+        <env name="DB_PASSWORD" value="leads_password"/>
+
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+
+        <!-- Other test env variables -->
+        <env name="API_BEARER_TOKEN" value="test_api_token"/>
+        <env name="THIRD_PARTY_API_URL" value="http://localhost:8080/mock-third-party"/>
+
+        <env name="LOG_DB_CONNECTION" value="pgsql"/>
+        <env name="LOG_DB_HOST" value="127.0.0.1"/>
+        <env name="LOG_DB_PORT" value="5433"/>
+        <env name="LOG_DB_DATABASE" value="error_logs_test"/>
+        <env name="LOG_DB_USERNAME" value="logs_user"/>
+        <env name="LOG_DB_PASSWORD" value="logs_password"/>
+
+    </php>
+</phpunit>
