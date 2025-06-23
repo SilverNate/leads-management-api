@@ -1,35 +1,28 @@
 version: '3.8'
 
 services:
-  # Nginx web server
   nginx:
     image: nginx:stable-alpine
     container_name: nginx_lead_api
     ports:
-      - "80:80" # Map host port 80 to container port 80
+      - "80:80"
     volumes:
-      - ./:/var/www/html # Mount the current directory (Laravel app)
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf # Custom Nginx config
-      - ./nginx.conf:/etc/nginx/nginx.conf # Main Nginx config (optional, if you want to override global settings)
+      - ./:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - php-fpm # Nginx depends on PHP-FPM
+      - php-fpm
     networks:
       - lead-network
 
-  # PHP-FPM application server (Laravel)
   php-fpm:
     build:
-      context: . # Build from current directory
-      dockerfile: Dockerfile # Use the custom Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: php_fpm_lead_api
     volumes:
-      - ./:/var/www/html # Mount the current directory (Laravel app)
-    # Ensure composer install and key generation are done after volume mount
-    # and before the app starts serving requests. This can be done in the entrypoint
-    # or manually after starting containers for the first time.
+      - ./:/var/www/html
     environment:
-      # Pass .env variables to the container for the Laravel application
-      # Ensure these match the keys in your .env file
       APP_NAME: "${APP_NAME}"
       APP_ENV: "${APP_ENV}"
       APP_KEY: "${APP_KEY}"
@@ -63,7 +56,6 @@ services:
       - pgsql_error_logs_db
       - redis_cache
       
-  # PostgreSQL database for leads
   pgsql_leads_db:
     image: postgres:15-alpine
     container_name: pgsql_leads_db
@@ -72,14 +64,13 @@ services:
       POSTGRES_USER: "${DB_USERNAME}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
-      - db_leads_data:/var/lib/postgresql/data # Persistent data volume
-      - ./init-leads-db.sql:/docker-entrypoint-initdb.d/init-leads-db.sql # Initialize with schema and data
+      - db_leads_data:/var/lib/postgresql/data
+      - ./init-leads-db.sql:/docker-entrypoint-initdb.d/init-leads-db.sql
     ports:
-      - "5432:5432" # Expose for direct connection if needed (e.g., from host)
+      - "5432:5432" 
     networks:
       - lead-network
 
-  # PostgreSQL database for error logs
   pgsql_error_logs_db:
     image: postgres:15-alpine
     container_name: pgsql_error_logs_db
@@ -88,22 +79,56 @@ services:
       POSTGRES_USER: "${LOG_DB_USERNAME}"
       POSTGRES_PASSWORD: "${LOG_DB_PASSWORD}"
     volumes:
-      - db_error_logs_data:/var/lib/postgresql/data # Persistent data volume
-      - ./init-error-logs-db.sql:/docker-entrypoint-initdb.d/init-error-logs-db.sql # Initialize with schema and data
+      - db_error_logs_data:/var/lib/postgresql/data
+      - ./init-error-logs-db.sql:/docker-entrypoint-initdb.d/init-error-logs-db.sql
     ports:
       - "5433:5432" 
     networks:
       - lead-network
 
-  # Redis for caching
   redis_cache:
     image: redis:alpine
     container_name: redis_lead_api_cache
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data # Persistent data volume for Redis
+      - redis_data:/data
     ports:
-      - "6379:6379" # Expose for direct connection if needed
+      - "6379:6379" 
+    networks:
+      - lead-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_lead_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      WORDPRESS_DB_HOST: mysql_wordpress_db:3306
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+    volumes:
+      - ./wordpress:/var/www/html  # <-- Bind mount for local development
+    depends_on:
+      - mysql_wordpress_db
+      - nginx
+    ports:
+      - "8080:80"
+    networks:
+      - lead-network
+
+  mysql_wordpress_db:
+    image: mysql:8.0
+    container_name: mysql_wordpress_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_wordpress_data:/var/lib/mysql
     networks:
       - lead-network
 
@@ -112,6 +137,7 @@ networks:
     driver: bridge
 
 volumes:
-  db_leads_data: # Volume for leads database persistence
-  db_error_logs_data: # Volume for error logs database persistence
-  redis_data: # Volume for Redis data persistence
+  db_leads_data:
+  db_error_logs_data:
+  redis_data:
+  db_wordpress_data:
