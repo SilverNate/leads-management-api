@@ -44,6 +44,8 @@ A Laravel-based API for managing and forwarding lead data, with centralized erro
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 - A code editor VS Code
+- composer
+- php & laravel CLI
 
 ---
 
@@ -55,6 +57,9 @@ A Laravel-based API for managing and forwarding lead data, with centralized erro
 git clone <your-repository-url>
 cd lead-management-api
 cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate (no need since first container up init sql)
 ```
 
 ### 2. Build and start services
@@ -71,7 +76,7 @@ This will start:
 - PostgreSQL (Error Logs)
 - Redis
 
-Verify Service 
+Check Service is running
 ```bash
 docker compose ps
 ```
@@ -88,11 +93,27 @@ docker compose down
 2. Log in to your WordPress Dashboard after the installation is complete.
 3. Check active theme on wordpress admin
 4. Create new page
-5. Edit page on right-side bar on template, choose <b>Lead Submission Form</b> from drop-down.
-6. Publish then open the page
-7. Fill the form
-8. Add utm source on the url example: http://localhost:8080/?page_id=28<b>&utm_source=facebook</b>
-9. Submit
+5. copy file page-lead-form.php inside root folder active theme
+6. copy this code inside function
+```bash
+function my_theme_enqueue_jquery()
+{
+	if (! wp_script_is('jquery', 'registered')) {
+		wp_enqueue_script('jquery');
+	}
+	if (wp_script_is('jquery', 'registered') && ! wp_script_is('jquery', 'enqueued')) {
+		wp_enqueue_script('jquery', false, array(), false, true); // false for src, empty array for deps, false for version, true for in_footer
+	}
+}
+add_action('wp_enqueue_scripts', 'my_theme_enqueue_jquery');
+```
+7. <b>docker compose restart wordpress</b> on CLI (if you have wordpress folder this step can skip)
+8. refresh ctrl + shift + R on web page editor wordpress
+9. Edit page on right-side bar on template, choose <b>Lead Submission Form</b> from drop-down.
+10. Publish then open the page
+11. Fill the form
+12. Add utm source on the url example: http://localhost:8080/?page_id=28<b>&utm_source=facebook</b>
+13. Submit
 
 ## 📡 API Endpoints
 
